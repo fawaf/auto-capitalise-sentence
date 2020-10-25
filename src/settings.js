@@ -72,6 +72,10 @@ $('#sites').on('input', function() {
   $('#submitButton').prop('disabled', false);
 });
 
+$('#toggleButton').on('click', function() {
+  console.log('toggled');
+});
+
 function set_should_capitalise_i_variable(value) {
   browser.storage.local.set({
     should_capitalise_i: value,
