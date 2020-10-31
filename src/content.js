@@ -39,6 +39,8 @@ function observeInputTags() {
   });
 }
 
+let elements = [];
+
 function processResponse(item) {
   sitesToExclude = item.sites_to_ignore;
   utils.setShouldCapitaliseI(item.should_capitalise_i);
@@ -75,8 +77,8 @@ function processResponse(item) {
 function observeHtmlBody() {
   let target = document.querySelector('body');
 
-  // let tags = ['p', 'span', 'div'];
-  let tags = ['p', 'span'];
+  // let immutableTags = ['p', 'span', 'div'];
+  let immutableTags = ['p', 'span'];
   let inputTags = ['input[type=\'text\']', 'textarea'];
 
   let observer = new MutationObserver(function(mutations) {
@@ -101,7 +103,7 @@ function observeHtmlBody() {
               }
             });
 
-            $.each(tags, function(_i, tagName) {
+            $.each(immutableTags, function(_i, tagName) {
               let filteredEls = utils.getFilteredElements(addedNodes, tagName);
 
               filteredEls.each(function(_index, element) {
