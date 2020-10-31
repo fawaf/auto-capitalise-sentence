@@ -40,10 +40,10 @@ function processResponse(item) {
 
   if (item && sitesToExclude) {
     //https://stackoverflow.com/questions/406192/get-current-url-with-jquery
-    var currentUrlDomain = window.location.origin;
+    let currentUrlDomain = window.location.origin;
 
     try {
-      var shouldEnableCapitalisingOnCurrentSite = true;
+      let shouldEnableCapitalisingOnCurrentSite = true;
 
       $.each(sitesToExclude, function(_i, siteToExclude) {
         if (currentUrlDomain.includes(siteToExclude)) {
@@ -68,13 +68,13 @@ function processResponse(item) {
 
 /*eslint no-debugger: "error"*/
 function observeHtmlBody() {
-  var target = document.querySelector('body');
+  let target = document.querySelector('body');
 
-  // var tags = ['p', 'span', 'div'];
-  var tags = ['p', 'span'];
-  var inputTags = ['input[type=\'text\']', 'textarea'];
+  // let tags = ['p', 'span', 'div'];
+  let tags = ['p', 'span'];
+  let inputTags = ['input[type=\'text\']', 'textarea'];
 
-  var observer = new MutationObserver(function(mutations) {
+  let observer = new MutationObserver(function(mutations) {
     $.each(mutations, function(_i, mutation) {
       try {
         if (mutation.type === 'childList') {
@@ -85,7 +85,7 @@ function observeHtmlBody() {
             throw new Error(errorMsg);
           }
 
-          var addedNodes = mutation.addedNodes;
+          let addedNodes = mutation.addedNodes;
           if (addedNodes && addedNodes.length > 0) {
             addedNodes.forEach(node => {
               if (utils.isFirstTextOfEditableTextNode(node)) {
@@ -97,7 +97,7 @@ function observeHtmlBody() {
             });
 
             $.each(tags, function(_i, tagName) {
-              var filteredEls = utils.getFilteredElements(addedNodes, tagName);
+              let filteredEls = utils.getFilteredElements(addedNodes, tagName);
 
               filteredEls.each(function(_index, element) {
                 if (utils.shouldCapitaliseContent(element)) {
@@ -107,7 +107,7 @@ function observeHtmlBody() {
             });
 
             $.each(inputTags, function(_i, tagName) {
-              var filteredEls = utils.getFilteredElements(addedNodes, tagName);
+              let filteredEls = utils.getFilteredElements(addedNodes, tagName);
 
               filteredEls.each(function(_index, element) {
                 $(element).on('input', function(event) {
@@ -127,7 +127,7 @@ function observeHtmlBody() {
     });
   });
 
-  var config = {
+  let config = {
     subtree: true,
     childList: true,
     characterData: true,
