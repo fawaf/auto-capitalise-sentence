@@ -28,18 +28,24 @@ browser.storage.onChanged.addListener(function(
   }
 });
 
+let elements = [];
+
 function hookupEventHandlers() {
   observeInputTags();
   observeHtmlBody();
 }
 
 function observeInputTags() {
-  $(':text,textarea').on(`input.${pluginNamespace}`, function(event) {
-    capitaliseText(event.target);
+  var inputElements = $(':text,textarea');
+
+  inputElements.each(() => {
+    elements.push($(this));
+
+    $(this).on(`input.${pluginNamespace}`, function(event) {
+      capitaliseText(event.target);
+    });
   });
 }
-
-let elements = [];
 
 function processResponse(item) {
   sitesToExclude = item.sites_to_ignore;
@@ -113,11 +119,13 @@ function observeHtmlBody() {
               });
             });
 
-            $.each(inputTags, function(_i, tagName) {
+            $.each(inputTags, (_i, tagName) => {
               let filteredEls = utils.getFilteredElements(addedNodes, tagName);
 
-              filteredEls.each(function(_index, element) {
-                $(element).on(`input.${pluginNamespace}`, function(event) {
+              filteredEls.each(() => {
+                elements.push($(this));
+
+                $(this).on(`input.${pluginNamespace}`, event => {
                   capitaliseText(event.target);
                 });
               });

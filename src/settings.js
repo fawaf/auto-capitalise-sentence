@@ -79,7 +79,7 @@ $('#sites').on(`input.${pluginNamespace}`, function() {
   $('#submitButton').prop('disabled', false);
 });
 
-$('#toggleButton').on('click', function() {
+$('#toggleButton').on(`click.${pluginNamespace}`, function() {
   console.log('toggled');
 });
 
