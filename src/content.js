@@ -28,8 +28,6 @@ browser.storage.onChanged.addListener(function(
   }
 });
 
-let elements = [];
-
 function hookupEventHandlers() {
   observeInputTags();
   observeHtmlBody();
@@ -38,10 +36,10 @@ function hookupEventHandlers() {
 function observeInputTags() {
   var inputElements = $(':text,textarea');
 
-  inputElements.each(() => {
-    elements.push($(this));
+  inputElements.each((_, item) => {
+    utils.addElementWithEventListener(item);
 
-    $(this).on(`input.${pluginNamespace}`, function(event) {
+    $(item).on(`input.${pluginNamespace}`, function(event) {
       capitaliseText(event.target);
     });
   });
@@ -122,10 +120,10 @@ function observeHtmlBody() {
             $.each(inputTags, (_i, tagName) => {
               let filteredEls = utils.getFilteredElements(addedNodes, tagName);
 
-              filteredEls.each(() => {
-                elements.push($(this));
+              filteredEls.each((_, item) => {
+                utils.addElementWithEventListener(item);
 
-                $(this).on(`input.${pluginNamespace}`, event => {
+                $(item).on(`input.${pluginNamespace}`, event => {
                   capitaliseText(event.target);
                 });
               });

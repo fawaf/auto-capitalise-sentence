@@ -1,6 +1,8 @@
 import { constants } from './constants';
+import { pluginNamespace } from './plugin-constants';
 
 export let should_capitalise_i = false;
+export let elements_with_event_listener = [];
 
 export function shouldCapitaliseForI(text) {
   const regex = /\s+i(\s+|')$/;
@@ -13,6 +15,18 @@ export function setShouldCapitaliseI(value) {
   if (value != null) {
     should_capitalise_i = value;
   }
+}
+
+export function addElementWithEventListener(element) {
+  elements_with_event_listener.push(element);
+  console.log(elements_with_event_listener);
+}
+
+export function toggleExtension() {
+  console.log(elements_with_event_listener);
+  elements_with_event_listener.forEach(element => {
+    element.off(`input.${pluginNamespace}`);
+  });
 }
 
 export function shouldCapitalise(text) {

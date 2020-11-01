@@ -1,4 +1,5 @@
 import browser from 'webextension-polyfill';
+import * as utils from './utils';
 import {
   pluginNamespace,
   sites_to_ignore,
@@ -81,6 +82,7 @@ $('#sites').on(`input.${pluginNamespace}`, function() {
 
 $('#toggleButton').on(`click.${pluginNamespace}`, function() {
   console.log('toggled');
+  utils.toggleExtension();
 });
 
 function set_should_capitalise_i_variable(value) {
