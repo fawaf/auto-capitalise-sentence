@@ -1,7 +1,12 @@
 import * as utils from '../src/utils.js';
+import {
+  constants_key_val,
+  names_key_val,
+  abbreviations_key_val,
+} from '../src/constants.js';
 const $ = require('jquery');
 
-describe('utilities test', function() {
+describe('utilities test', function () {
   test('getCapitalisedContent', () => {
     expect(utils.getCapitalisedContent('blah')).toBe('blaH');
     expect(utils.getCapitalisedContent('i')).toBe('I');
@@ -26,6 +31,10 @@ describe('utilities test', function() {
     expect(utils.shouldCapitalise('    k ')).toBe(false);
     expect(utils.shouldCapitalise('    ')).toBe(false);
     expect(utils.shouldCapitalise(' !   ')).toBe(false);
+    const slackText =
+      '<ts-mention data-id="UKTQJ356U" data-label="@Hangjit Rai" spellcheck="false" class="c-member_slug c-member_slug--link ts_tip_texty c-member_slug--mention" dir="ltr">@Hangjit Rai</ts-mention> Monday ';
+    expect(utils.shouldCapitalise(slackText)).toBe(false);
+    expect(utils.shouldCapitaliseForI(slackText)).toBe(false);
   });
 
   describe('shouldCapitalise', () => {
@@ -237,5 +246,130 @@ describe('utilities test', function() {
         utils.setText(element[0]);
       }).toThrow();
     });
+  });
+
+  test('getCaseInsensitiveMatchingAndCorrectedWords_Days', () => {
+    let str = 'I\'m the content of html Monday.';
+    let matchingAndCorrectWords = (text) =>
+      utils.getCaseInsensitiveMatchingAndCorrectedWords(text, constants_key_val);
+
+    expect(matchingAndCorrectWords(str)[0]).toBe('Monday');
+    expect(matchingAndCorrectWords(str)[1]).toBe('Monday');
+
+    str = 'I\'m the content of html monday.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('monday');
+    expect(matchingAndCorrectWords(str)[1]).toBe('Monday');
+
+    str = 'I\'M THE CONTENT OF HTML MONDAY!';
+    expect(matchingAndCorrectWords(str)[0]).toBe('MONDAY');
+    expect(matchingAndCorrectWords(str)[1]).toBe('Monday');
+
+    str = 'I\'m the content of html.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('');
+    expect(matchingAndCorrectWords(str)[1]).toBe('');
+  });
+
+  test('getCaseInsensitiveMatchingAndCorrectedWords_Months', () => {
+    let str = 'I\'m the content of html january.';
+    let matchingAndCorrectWords = (text) =>
+      utils.getCaseInsensitiveMatchingAndCorrectedWords(text, constants_key_val);
+
+    expect(matchingAndCorrectWords(str)[0]).toBe('january');
+    expect(matchingAndCorrectWords(str)[1]).toBe('January');
+
+    str = 'I\'M THE CONTENT OF HTML JANUARY!';
+    expect(matchingAndCorrectWords(str)[0]).toBe('JANUARY');
+    expect(matchingAndCorrectWords(str)[1]).toBe('January');
+
+    str = 'I\'m the content of html.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('');
+    expect(matchingAndCorrectWords(str)[1]).toBe('');
+  });
+
+  test('getCaseInsensitiveMatchingAndCorrectedWords', () => {
+    let str = 'I\'m the content of html James.';
+    let matchingAndCorrectWords = (text) =>
+      utils.getCaseInsensitiveMatchingAndCorrectedWords(text, names_key_val);
+
+    expect(matchingAndCorrectWords(str)[0]).toBe('James');
+    expect(matchingAndCorrectWords(str)[1]).toBe('James');
+
+    str = 'I\'m the content of html james.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('james');
+    expect(matchingAndCorrectWords(str)[1]).toBe('James');
+
+    str = 'I\'M THE CONTENT OF HTML JAMES!';
+    expect(matchingAndCorrectWords(str)[0]).toBe('JAMES');
+    expect(matchingAndCorrectWords(str)[1]).toBe('James');
+
+    str = 'I\'m the content of html.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('');
+    expect(matchingAndCorrectWords(str)[1]).toBe('');
+  });
+
+  test('getCaseInsensitiveMatchingAndCorrectedWords_OtherPunctuation', () => {
+    let str = 'I\'m the content of html \'James\'';
+    let matchingAndCorrectWords = (text) =>
+      utils.getCaseInsensitiveMatchingAndCorrectedWords(text, names_key_val);
+
+    expect(matchingAndCorrectWords(str)[0]).toBe('James');
+    expect(matchingAndCorrectWords(str)[1]).toBe('James');
+
+    str = 'I\'m the content of html james!';
+    expect(matchingAndCorrectWords(str)[0]).toBe('james');
+    expect(matchingAndCorrectWords(str)[1]).toBe('James');
+
+    str = 'I\'M THE CONTENT OF HTML "JAMES"';
+    expect(matchingAndCorrectWords(str)[0]).toBe('JAMES');
+    expect(matchingAndCorrectWords(str)[1]).toBe('James');
+
+    str = 'I\'m the content of html.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('');
+    expect(matchingAndCorrectWords(str)[1]).toBe('');
+  });
+
+  test('getCaseInsensitiveMatchingAndCorrectedWords_Abbreviations', () => {
+    let str = 'I\'m the content of html.';
+    let matchingAndCorrectWords = (text) =>
+      utils.getCaseInsensitiveMatchingAndCorrectedWords(
+        text,
+        abbreviations_key_val
+      );
+
+    expect(matchingAndCorrectWords(str)[0]).toBe('html');
+    expect(matchingAndCorrectWords(str)[1]).toBe('HTML');
+
+    str = 'I\'m the content of html!';
+    expect(matchingAndCorrectWords(str)[0]).toBe('html');
+    expect(matchingAndCorrectWords(str)[1]).toBe('HTML');
+
+    str = 'I\'M THE CONTENT OF HTML.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('HTML');
+    expect(matchingAndCorrectWords(str)[1]).toBe('HTML');
+
+    str = 'I\'m the content of ';
+    expect(matchingAndCorrectWords(str)[0]).toBe('');
+    expect(matchingAndCorrectWords(str)[1]).toBe('');
+  });
+
+  test('getCaseSensitiveMatchingAndCorrectedWords_ApostropheWords', () => {
+    let str = 'I cant.';
+    let matchingAndCorrectWords = (text) =>
+      utils.getCaseSensitiveMatchingAndCorrectedWords(text, constants_key_val);
+
+    expect(matchingAndCorrectWords(str)[0]).toBe('cant');
+    expect(matchingAndCorrectWords(str)[1]).toBe('can\'t');
+
+    str = 'I CANT ';
+    expect(matchingAndCorrectWords(str)[0]).toBe('');
+    expect(matchingAndCorrectWords(str)[1]).toBe('');
+
+    str = 'I wont ';
+    expect(matchingAndCorrectWords(str)[0]).toBe('wont');
+    expect(matchingAndCorrectWords(str)[1]).toBe('won\'t');
+
+    str = 'I Wont.';
+    expect(matchingAndCorrectWords(str)[0]).toBe('');
+    expect(matchingAndCorrectWords(str)[1]).toBe('');
   });
 });

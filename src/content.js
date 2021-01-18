@@ -4,26 +4,59 @@ import {
   pluginNamespace,
   sites_to_ignore,
   should_capitalise_i,
+  should_capitalise_names,
+  should_capitalise_abbreviations,
+  constants_key_val,
+  names_key_val,
+  abbreviations_key_val,
 } from './plugin-constants';
 
 const errorMsg = 'breaking loop';
 let sitesToExclude = [];
 
 browser.storage.local
-  .get([sites_to_ignore, should_capitalise_i])
+  .get([
+    sites_to_ignore,
+    should_capitalise_i,
+    should_capitalise_names,
+    should_capitalise_abbreviations,
+    constants_key_val,
+    names_key_val,
+    abbreviations_key_val,
+  ])
   .then(processResponse, utils.onError);
 
 /* Updating the value of this local storage variable in settings.js happens AFTER content.js.
  * The browser doesn't register the change and doesn't capitalise I by dfeault after installing the extension.
  * This block will capture the event and update the value of 'should_capitalise_i'.
  */
-browser.storage.onChanged.addListener(function(
+browser.storage.onChanged.addListener(function (
   changes, // object
   areaName // string
 ) {
   if (areaName === 'local') {
     if (changes.should_capitalise_i != null) {
-      utils.setShouldCapitaliseI(changes.should_capitalise_i);
+      const newValue = changes.should_capitalise_i.newValue;
+
+      if (newValue != null) {
+        utils.setShouldCapitaliseI(newValue);
+      }
+    }
+
+    if (changes.should_capitalise_names != null) {
+      const newValue = changes.should_capitalise_names.newValue;
+
+      if (newValue != null) {
+        utils.setShouldCapitaliseNames(newValue);
+      }
+    }
+
+    if (changes.should_capitalise_abbreviations != null) {
+      const newValue = changes.should_capitalise_abbreviations.newValue;
+
+      if (newValue != null) {
+        utils.setShouldCapitaliseAbbreviations(newValue);
+      }
     }
   }
 });
@@ -31,10 +64,28 @@ browser.storage.onChanged.addListener(function(
 function hookupEventHandlers() {
   observeInputTags();
   observeHtmlBody();
+
+  observeIframeInputTags();
+}
+
+function observeIframeInputTags() {
+  $('iframe').on('load', (event) => {
+    let iframe = event.target;
+    $(iframe)
+      .contents()
+      .find(':text,textarea')
+      .each((_, item) => {
+        //console.log(item);
+
+        $(item).on(`input.${pluginNamespace}`, function (event) {
+          capitaliseText(event.target);
+        });
+      });
+  });
 }
 
 function observeInputTags() {
-  var inputElements = $(':text,textarea');
+  $(':text,textarea').on(`input.${pluginNamespace}`, function (event) {
 
   inputElements.each((_, item) => {
     utils.addElementWithEventListener(item);
@@ -48,6 +99,11 @@ function observeInputTags() {
 function processResponse(item) {
   sitesToExclude = item.sites_to_ignore;
   utils.setShouldCapitaliseI(item.should_capitalise_i);
+  utils.setShouldCapitaliseNames(item.should_capitalise_names);
+  utils.setShouldCapitaliseAbbreviations(item.should_capitalise_abbreviations);
+  utils.setConstantsKeyVal(item.constants_key_val);
+  utils.setNamesKeyVal(item.names_key_val);
+  utils.setAbbreviationsKeyVal(item.abbreviations_key_val);
 
   if (item && sitesToExclude) {
     //https://stackoverflow.com/questions/406192/get-current-url-with-jquery
@@ -56,7 +112,7 @@ function processResponse(item) {
     try {
       let shouldEnableCapitalisingOnCurrentSite = true;
 
-      $.each(sitesToExclude, function(_i, siteToExclude) {
+      $.each(sitesToExclude, function (_i, siteToExclude) {
         if (currentUrlDomain.includes(siteToExclude)) {
           shouldEnableCapitalisingOnCurrentSite = false;
         }
@@ -86,11 +142,10 @@ function observeHtmlBody() {
   let inputTags = ['input[type=\'text\']', 'textarea'];
 
   let observer = new MutationObserver(function(mutations) {
-    $.each(mutations, function(_i, mutation) {
+    $.each(mutations, function (_i, mutation) {
       try {
         if (mutation.type === 'childList') {
           // add support for div block in gmail and outlook
-          // if (['P','DIV'].includes(mutation.target.nodeName )) {
           if (['P'].includes(mutation.target.nodeName)) {
             capitaliseText(mutation.target);
             throw new Error(errorMsg);
@@ -98,10 +153,10 @@ function observeHtmlBody() {
 
           let addedNodes = mutation.addedNodes;
           if (addedNodes && addedNodes.length > 0) {
-            addedNodes.forEach(node => {
+            addedNodes.forEach((node) => {
               if (utils.isFirstTextOfEditableTextNode(node)) {
                 capitaliseText(node.parentNode);
-                addedNodes = addedNodes.filter(addedNode => {
+                addedNodes = addedNodes.filter((addedNode) => {
                   addedNode != node;
                 });
               }
@@ -110,7 +165,7 @@ function observeHtmlBody() {
             $.each(immutableTags, function(_i, tagName) {
               let filteredEls = utils.getFilteredElements(addedNodes, tagName);
 
-              filteredEls.each(function(_index, element) {
+              filteredEls.each(function (_index, element) {
                 if (utils.shouldCapitaliseContent(element)) {
                   capitaliseText(element);
                 }

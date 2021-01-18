@@ -4,6 +4,8 @@ import {
   pluginNamespace,
   sites_to_ignore,
   should_capitalise_i,
+  should_capitalise_names,
+  should_capitalise_abbreviations,
 } from './plugin-constants';
 
 browser.storage.local.get(sites_to_ignore).then(updateSiteIgnoreList, onError);
@@ -25,8 +27,8 @@ function getUrlDomain(data) {
   return a.hostname;
 }
 
-$(document).on(`click.${pluginNamespace}`, '#ignoreSiteButton', function() {
-  browser.tabs.query({ currentWindow: true, active: true }).then(tabs => {
+$(document).on(`click.${pluginNamespace}`, '#ignoreSiteButton', function () {
+  browser.tabs.query({ currentWindow: true, active: true }).then((tabs) => {
     var hostname = getUrlDomain(tabs[0].url);
     var sites = getSites();
     sites.push(hostname);
@@ -41,7 +43,7 @@ $(document).on(`click.${pluginNamespace}`, '#ignoreSiteButton', function() {
   });
 });
 
-$(document).on(`click.${pluginNamespace}`, '#submitButton', function() {
+$(document).on(`click.${pluginNamespace}`, '#submitButton', function () {
   var sites = getSites();
 
   browser.storage.local.set({
@@ -53,7 +55,7 @@ $(document).on(`click.${pluginNamespace}`, '#submitButton', function() {
 });
 
 // setting the value of checkbox
-browser.storage.local.get(should_capitalise_i).then(items => {
+browser.storage.local.get(should_capitalise_i).then((items) => {
   const shouldCapitaliseI = items.should_capitalise_i;
 
   if (shouldCapitaliseI === true || shouldCapitaliseI === undefined) {
@@ -66,7 +68,36 @@ browser.storage.local.get(should_capitalise_i).then(items => {
   }
 });
 
-$(document).on(`change.${pluginNamespace}`, '#shouldCapitaliseI', function(
+browser.storage.local.get(should_capitalise_names).then((items) => {
+  const shouldCapitaliseNames = items.should_capitalise_names;
+
+  if (shouldCapitaliseNames === true || shouldCapitaliseNames === undefined) {
+    //value not set yet/ext just installed
+    $('#shouldCapitaliseNames').prop('checked', true);
+    set_should_capitalise_names_variable(true);
+  } else {
+    $('#shouldCapitaliseNames').prop('checked', false);
+    set_should_capitalise_names_variable(false);
+  }
+});
+
+browser.storage.local.get(should_capitalise_abbreviations).then((items) => {
+  const shouldCapitaliseAbbreviations = items.should_capitalise_abbreviations;
+
+  if (
+    shouldCapitaliseAbbreviations === true ||
+    shouldCapitaliseAbbreviations === undefined
+  ) {
+    //value not set yet/ext just installed
+    $('#shouldCapitaliseAbbreviations').prop('checked', true);
+    set_should_capitalise_abbreviations_variable(true);
+  } else {
+    $('#shouldCapitaliseAbbreviations').prop('checked', false);
+    set_should_capitalise_abbreviations_variable(false);
+  }
+});
+
+$(document).on(`change.${pluginNamespace}`, '#shouldCapitaliseI', function (
   event
 ) {
   if ($(event.target).prop('checked')) {
@@ -76,8 +107,26 @@ $(document).on(`change.${pluginNamespace}`, '#shouldCapitaliseI', function(
   }
 });
 
-$('#sites').on(`input.${pluginNamespace}`, function() {
-  $('#submitButton').prop('disabled', false);
+$(document).on(
+  `change.${pluginNamespace}`,
+  '#shouldCapitaliseAbbreviations',
+  function (event) {
+    if ($(event.target).prop('checked')) {
+      set_should_capitalise_abbreviations_variable(true);
+    } else {
+      set_should_capitalise_abbreviations_variable(false);
+    }
+  }
+);
+
+$(document).on(`change.${pluginNamespace}`, '#shouldCapitaliseNames', function (
+  event
+) {
+  if ($(event.target).prop('checked')) {
+    set_should_capitalise_names_variable(true);
+  } else {
+    set_should_capitalise_names_variable(false);
+  }
 });
 
 $('#toggleButton').on(`click.${pluginNamespace}`, function() {
@@ -91,6 +140,18 @@ function set_should_capitalise_i_variable(value) {
   });
 }
 
+function set_should_capitalise_names_variable(value) {
+  browser.storage.local.set({
+    should_capitalise_names: value,
+  });
+}
+
+function set_should_capitalise_abbreviations_variable(value) {
+  browser.storage.local.set({
+    should_capitalise_abbreviations: value,
+  });
+}
+
 function getSites() {
   var sitesBoxVal = $('#sites').val();
 
@@ -101,3 +162,7 @@ function getSites() {
 
   return [];
 }
+
+$('#sites').on(`input.${pluginNamespace}`, function () {
+  $('#submitButton').prop('disabled', false);
+});

@@ -32,6 +32,84 @@ describe('capitaliseText', () => {
     );
   });
 
+  test('capitaliseText_ShouldNotCallSetText_WhenConstantMatchesExactly', () => {
+    const element = {
+      isContentEditable: true,
+      tagName: 'div',
+      innerHTML:
+        '<ts-mention data-id="UKTQJ356U" data-label="@Hangjit Rai" spellcheck="false" class="c-member_slug c-member_slug--link ts_tip_texty c-member_slug--mention" dir="ltr">@Hangjit Rai</ts-mention> Monday ',
+    };
+
+    const shouldCapitaliseFake = sinon.fake();
+    const shouldCapitaliseForIFake = sinon.fake();
+    const setTextFake = sinon.fake();
+
+    utils.capitaliseText(
+      element,
+      shouldCapitaliseFake,
+      shouldCapitaliseForIFake,
+      utils.getText,
+      setTextFake
+    );
+    expect(element.isContentEditable.calledOnce).toBeTruthy;
+    expect(element.tagName.calledOnce).toBeTruthy;
+
+    expect(shouldCapitaliseFake.getCall(0).args[0]).toBe(
+      '<ts-mention data-id="UKTQJ356U" data-label="@Hangjit Rai" spellcheck="false" class="c-member_slug c-member_slug--link ts_tip_texty c-member_slug--mention" dir="ltr">@Hangjit Rai</ts-mention> Monday '
+    );
+    expect(shouldCapitaliseForIFake.getCall(0).args[0]).toBe(
+      '<ts-mention data-id="UKTQJ356U" data-label="@Hangjit Rai" spellcheck="false" class="c-member_slug c-member_slug--link ts_tip_texty c-member_slug--mention" dir="ltr">@Hangjit Rai</ts-mention> Monday '
+    );
+    expect(setTextFake.getCall(0)).toBeNull();
+  });
+
+  test('capitaliseText_NoTagName', () => {
+    const element = {
+      isContentEditable: true,
+      innerHTML: 'I\'m the content of html tag.',
+    };
+    const shouldCapitaliseFake = sinon.fake();
+    const shouldCapitaliseForIFake = sinon.fake();
+    const getTextFake = sinon.fake();
+    const setTextFake = sinon.fake();
+
+    utils.capitaliseText(
+      element,
+      shouldCapitaliseFake,
+      shouldCapitaliseForIFake,
+      getTextFake,
+      setTextFake
+    );
+
+    expect(shouldCapitaliseFake.getCall(0)).toBeNull();
+    expect(shouldCapitaliseForIFake.getCall(0)).toBeNull();
+    expect(getTextFake.getCall(0).args[0]).toBe(element);
+  });
+
+  test('capitaliseText_GetText_EmptyResponse', () => {
+    const element = {
+      isContentEditable: true,
+      tagName: 'div',
+      innerHTML: 'I\'m the content of html tag.<br>',
+    };
+
+    const shouldCapitaliseFake = sinon.fake();
+    const shouldCapitaliseForIFake = sinon.fake();
+    const getTextFake = sinon.fake();
+
+    utils.capitaliseText(
+      element,
+      shouldCapitaliseFake,
+      shouldCapitaliseForIFake,
+      getTextFake,
+      null
+    );
+
+    expect(shouldCapitaliseFake.getCall(0)).toBeNull();
+    expect(shouldCapitaliseForIFake.getCall(0)).toBeNull();
+    expect(getTextFake.getCall(0).args[0]).toBe(element);
+  });
+
   test('capitaliseText_Symbol_@', () => {
     const element = {
       isContentEditable: true,
@@ -200,25 +278,6 @@ describe('capitaliseText', () => {
     expect(() => {
       const element = {
         isContentEditable: true,
-        innerHTML: 'I\'m the content of html tag.',
-      };
-      const shouldCapitaliseFake = sinon.fake();
-      const shouldCapitaliseForIFake = sinon.fake();
-      const getTextFake = sinon.fake();
-      const setTextFake = sinon.fake();
-
-      utils.capitaliseText(
-        element,
-        shouldCapitaliseFake,
-        shouldCapitaliseForIFake,
-        getTextFake,
-        setTextFake
-      );
-    }).toThrow();
-
-    expect(() => {
-      const element = {
-        isContentEditable: true,
         tagName: 'div',
         innerHTML: 'I\'m the content of html tag.<br>',
       };
@@ -232,25 +291,6 @@ describe('capitaliseText', () => {
         shouldCapitaliseForIFake,
         null,
         setTextFake
-      );
-    }).toThrow();
-
-    expect(() => {
-      const element = {
-        isContentEditable: true,
-        tagName: 'div',
-        innerHTML: 'I\'m the content of html tag.<br>',
-      };
-      const shouldCapitaliseFake = sinon.fake();
-      const shouldCapitaliseForIFake = sinon.fake();
-      const getTextFake = sinon.fake();
-
-      utils.capitaliseText(
-        element,
-        shouldCapitaliseFake,
-        shouldCapitaliseForIFake,
-        getTextFake,
-        null
       );
     }).toThrow();
 
@@ -429,33 +469,5 @@ describe('setEndOfContenteditable', () => {
 
     expect(args[0].data).toBe(expectedArg);
     expect(args[1]).toBe(expectedArg.length);
-  });
-
-  test('getIndexOfMatchingConstantWord_Days', () => {
-    let str = 'I\'m the content of html monday.';
-    expect(utils.getIndexOfMatchingConstantWord(str)[0]).toBe(0);
-    expect(utils.getIndexOfMatchingConstantWord(str)[1]).toBe('monday');
-
-    str = 'I\'M THE CONTENT OF HTML MONDAY!';
-    expect(utils.getIndexOfMatchingConstantWord(str)[0]).toBe(0);
-    expect(utils.getIndexOfMatchingConstantWord(str)[1]).toBe('MONDAY');
-
-    str = 'I\'m the content of html.';
-    expect(utils.getIndexOfMatchingConstantWord(str)[0]).toBe(-1);
-    expect(utils.getIndexOfMatchingConstantWord(str)[1]).toBe('html');
-  });
-
-  test('getIndexOfMatchingConstantWord_Months', () => {
-    let str = 'I\'m the content of html january.';
-    expect(utils.getIndexOfMatchingConstantWord(str)[0]).toBe(7);
-    expect(utils.getIndexOfMatchingConstantWord(str)[1]).toBe('january');
-
-    str = 'I\'M THE CONTENT OF HTML JANUARY!';
-    expect(utils.getIndexOfMatchingConstantWord(str)[0]).toBe(7);
-    expect(utils.getIndexOfMatchingConstantWord(str)[1]).toBe('JANUARY');
-
-    str = 'I\'m the content of html.';
-    expect(utils.getIndexOfMatchingConstantWord(str)[0]).toBe(-1);
-    expect(utils.getIndexOfMatchingConstantWord(str)[1]).toBe('html');
   });
 });

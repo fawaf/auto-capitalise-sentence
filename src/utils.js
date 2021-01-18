@@ -1,8 +1,11 @@
-import { constants } from './constants';
 import { pluginNamespace } from './plugin-constants';
-
 export let should_capitalise_i = false;
+export let should_capitalise_names = false;
 export let elements_with_event_listener = [];
+export let should_capitalise_abbreviations = false;
+export let constants_key_val = {};
+export let names_key_val = {};
+export let abbreviations_key_val = {};
 
 export function shouldCapitaliseForI(text) {
   const regex = /\s+i(\s+|')$/;
@@ -29,24 +32,66 @@ export function toggleExtension() {
   });
 }
 
+export function setShouldCapitaliseNames(value) {
+  if (value != null) {
+    should_capitalise_names = value;
+  }
+}
+
+export function setShouldCapitaliseAbbreviations(value) {
+  if (value != null) {
+    should_capitalise_abbreviations = value;
+  }
+}
+
+export function setConstantsKeyVal(value) {
+  if (value != null) {
+    constants_key_val = value;
+  }
+}
+
+export function setNamesKeyVal(value) {
+  if (value != null) {
+    names_key_val = value;
+  }
+}
+
+export function setAbbreviationsKeyVal(value) {
+  if (value != null) {
+    abbreviations_key_val = value;
+  }
+}
+
 export function shouldCapitalise(text) {
   const multilineRegex = /\s*\n+\s*\w$/;
   let matches = multilineRegex.test(text);
 
-  if (matches) return true;
+  if (matches) {
+    return true;
+  }
 
   const sentenceRegex = /\w+\s*([.?!])+\s+\w$/;
   matches = sentenceRegex.test(text);
 
   if (!matches) {
+    // console.log(text);
+    // console.log(text.length);
     return text.length == 1;
   }
 
   return matches;
 }
 
-export function getIndexOfMatchingConstantWord(text) {
-  const lastWordRegex = /\b(\w+)[.?!\s]+$/;
+export function getCaseInsensitiveMatchingAndCorrectedWords(text, key_val) {
+  return getMatchingAndCorrectedWords(text, key_val, true);
+}
+
+export function getCaseSensitiveMatchingAndCorrectedWords(text, key_val) {
+  return getMatchingAndCorrectedWords(text, key_val, false);
+}
+
+export function getMatchingAndCorrectedWords(text, key_val, case_insensitive) {
+  const lastWordRegex = /\b(\w+)\W$/;
 
   let match = lastWordRegex.exec(text);
 
@@ -54,15 +99,18 @@ export function getIndexOfMatchingConstantWord(text) {
     const matchedWord = match[1];
 
     if (matchedWord != null) {
-      let index = constants.findIndex(
-        item => matchedWord.toLowerCase() == item.toLowerCase()
-      );
+      let correctedWord =
+        case_insensitive === true
+          ? key_val[matchedWord.toLowerCase()]
+          : key_val[matchedWord];
 
-      return [index, matchedWord];
+      if (correctedWord != null) {
+        return [matchedWord, correctedWord];
+      }
     }
   }
 
-  return [-1, ''];
+  return ['', ''];
 }
 
 export function onError(error) {
@@ -119,12 +167,14 @@ export function setEndOfContenteditable(contentEditableElement) {
     //Firefox, Chrome, Opera, Safari, IE 9+
     range = document.createRange(); //Create a range (a range is a like the selection but invisible)
     const childNodes = contentEditableElement.childNodes;
+
+    if (childNodes == null) return;
+
     const childNode =
       childNodes.length == 1 ? childNodes[0] : childNodes[childNodes.length - 2];
     // childNodes.forEach(x=>console.log(x.outerHTML));
 
-    if (childNode === undefined) {
-      console.log(contentEditableElement);
+    if (childNode == null) {
       return;
     }
 
@@ -166,6 +216,8 @@ export function capitaliseText(
 
   let text = getText(element, tagName);
 
+  if (text == null) return;
+
   const lastChar = text.trim().slice(-1);
   const isLastCharAnAlphabet = lastChar.match(/[a-z]/i);
 
@@ -198,10 +250,29 @@ export function capitaliseText(
     return;
   }
 
-  const [index, matchedWord] = getIndexOfMatchingConstantWord(text);
-  if (index >= 0) {
-    let updatedStr = text.replace(matchedWord, constants[index]);
-    setText(element, tagName, updatedStr, false);
+  const case_sensitive = true;
+  updateConstant(text, element, tagName, constants_key_val, case_sensitive);
+
+  if (should_capitalise_names) {
+    updateConstant(text, element, tagName, names_key_val, !case_sensitive);
+  }
+  
+  if (should_capitalise_abbreviations) {
+    updateConstant(text, element, tagName, abbreviations_key_val, !case_sensitive);
+  }
+}
+
+function updateConstant(text, element, tagName, key_val, case_sensitive) {
+  const [matchedWord, correctedWord] =
+    case_sensitive === true
+      ? getCaseSensitiveMatchingAndCorrectedWords(text, key_val)
+      : getCaseInsensitiveMatchingAndCorrectedWords(text, key_val);
+
+  if (matchedWord !== '') {
+    if (matchedWord !== correctedWord) {
+      let updatedStr = text.replace(matchedWord, correctedWord);
+      setText(element, tagName, updatedStr, false);
+    }
   }
 }
 
