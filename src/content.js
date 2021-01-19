@@ -30,7 +30,7 @@ browser.storage.local
  * The browser doesn't register the change and doesn't capitalise I by dfeault after installing the extension.
  * This block will capture the event and update the value of 'should_capitalise_i'.
  */
-browser.storage.onChanged.addListener(function (
+browser.storage.onChanged.addListener(function(
   changes, // object
   areaName // string
 ) {
@@ -69,7 +69,7 @@ function hookupEventHandlers() {
 }
 
 function observeIframeInputTags() {
-  $('iframe').on('load', (event) => {
+  $('iframe').on('load', event => {
     let iframe = event.target;
     $(iframe)
       .contents()
@@ -77,7 +77,7 @@ function observeIframeInputTags() {
       .each((_, item) => {
         //console.log(item);
 
-        $(item).on(`input.${pluginNamespace}`, function (event) {
+        $(item).on(`input.${pluginNamespace}`, function(event) {
           capitaliseText(event.target);
         });
       });
@@ -85,7 +85,7 @@ function observeIframeInputTags() {
 }
 
 function observeInputTags() {
-  $(':text,textarea').on(`input.${pluginNamespace}`, function (event) {
+  var inputElements = $(':text,textarea');
 
   inputElements.each((_, item) => {
     utils.addElementWithEventListener(item);
@@ -112,7 +112,7 @@ function processResponse(item) {
     try {
       let shouldEnableCapitalisingOnCurrentSite = true;
 
-      $.each(sitesToExclude, function (_i, siteToExclude) {
+      $.each(sitesToExclude, function(_i, siteToExclude) {
         if (currentUrlDomain.includes(siteToExclude)) {
           shouldEnableCapitalisingOnCurrentSite = false;
         }
@@ -142,7 +142,7 @@ function observeHtmlBody() {
   let inputTags = ['input[type=\'text\']', 'textarea'];
 
   let observer = new MutationObserver(function(mutations) {
-    $.each(mutations, function (_i, mutation) {
+    $.each(mutations, function(_i, mutation) {
       try {
         if (mutation.type === 'childList') {
           // add support for div block in gmail and outlook
@@ -153,10 +153,10 @@ function observeHtmlBody() {
 
           let addedNodes = mutation.addedNodes;
           if (addedNodes && addedNodes.length > 0) {
-            addedNodes.forEach((node) => {
+            addedNodes.forEach(node => {
               if (utils.isFirstTextOfEditableTextNode(node)) {
                 capitaliseText(node.parentNode);
-                addedNodes = addedNodes.filter((addedNode) => {
+                addedNodes = addedNodes.filter(addedNode => {
                   addedNode != node;
                 });
               }
@@ -165,7 +165,7 @@ function observeHtmlBody() {
             $.each(immutableTags, function(_i, tagName) {
               let filteredEls = utils.getFilteredElements(addedNodes, tagName);
 
-              filteredEls.each(function (_index, element) {
+              filteredEls.each(function(_index, element) {
                 if (utils.shouldCapitaliseContent(element)) {
                   capitaliseText(element);
                 }

@@ -28,5 +28,5 @@
     "48": "icons/auto-capitalise-sentence.png",
     "128": "icons/auto-capitalise-sentence.png"
   },
-  "permissions": ["storage", "tabs"]
+  "permissions": ["storage", "tabs","management"]
 }
