@@ -31,16 +31,6 @@ export function toggleExtension() {
     element.off(`input.${pluginNamespace}`);
   });
 
-  toggleEnabled();
-}
-
-function toggleEnabled() {
-  let id = "{680e06ed-65ed-4e11-a9c0-0e6f80b9a347}";
-
-  var getting = browser.management.get(id);
-  getting.then((info) => {
-    browser.management.setEnabled(id, !info.enabled);
-  });
 }
 
 export function setShouldCapitaliseNames(value) {

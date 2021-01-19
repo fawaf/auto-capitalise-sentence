@@ -28,5 +28,6 @@
     "48": "icons/auto-capitalise-sentence.png",
     "128": "icons/auto-capitalise-sentence.png"
   },
-  "permissions": ["storage", "tabs","management"]
+  "permissions": ["storage", "tabs","management"],
+  "start_url": "http://localhost:3000"
 }
