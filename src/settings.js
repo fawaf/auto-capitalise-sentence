@@ -2,6 +2,7 @@ import browser from 'webextension-polyfill';
 import {
   pluginNamespace,
   sitesToIgnore,
+  sitesToInclude,
   wordsToExclude,
   wordsToInclude,
   shouldCapitaliseI,
@@ -11,7 +12,7 @@ import {
 } from './plugin-constants';
 
 browser.storage.sync
-  .get([sitesToIgnore, wordsToExclude, wordsToInclude])
+  .get([sitesToIgnore, sitesToInclude, wordsToExclude, wordsToInclude])
   .then(updateIgnoreLists, onError);
 
 function updateIgnoreLists(item) {
@@ -174,6 +175,10 @@ function getExcludedWords() {
 
 $('#sites').on(`input.${pluginNamespace}`, function () {
   $('#submitButton').prop('disabled', false);
+});
+
+$('#included_sites').on(`input.${pluginNamespace}`, function () {
+  $('#submitButtonIncludedSites').prop('disabled', false);
 });
 
 $('#included_words_textbox').on(`input.${pluginNamespace}`, function () {

@@ -24,6 +24,11 @@
                         aria-selected="true">Excluded websites</button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="included-sites-tab" data-bs-toggle="tab"
+                        data-bs-target="#included_sites" type="button" role="tab" aria-controls="included-sites"
+                        aria-selected="true">Included websites</button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="included-words-tab" data-bs-toggle="tab"
                         data-bs-target="#included_words" type="button" role="tab" aria-controls="included-words"
                         aria-selected="false">Included words</button>
@@ -51,6 +56,20 @@
                     <div class="d-grid gap-2">
                         <input type="button" value="Save" id="submitButton" class="btn btn-primary btn-block" disabled>
                         <input type="button" value="Add current site to ignore list" id="ignoreSiteButton"
+                            class="btn btn-primary btn-block">
+                    </div>
+                </div>
+                <div class="tab-pane fade show" role="tabpanel" aria-labelledby="included-sites-tab"
+                    id="included_sites">
+                    <div class="mb-2">
+                      <small>Enter websites where you want the capitalising to be enabled. This takes precedence over the excluded sites.</small>
+                        <textarea id="included_sites" rows="4" class="form-control"
+                            placeholder="Add sites to include"></textarea>
+                        <small class="text-muted">Note: Add each site in a separate row and click 'Save' button.</small>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <input type="button" value="Save" id="submitButtonIncludedSites" class="btn btn-primary btn-block" disabled>
+                        <input type="button" value="Add current site to include list" id="includeSiteButton"
                             class="btn btn-primary btn-block">
                     </div>
                 </div>
